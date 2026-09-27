@@ -4,38 +4,57 @@
       "user": {
         "title": "Pick your kiosk",
         "description": "Select the Kiosk Satellite tablet from its ESPHome device. The backup entities are added to that device and the admin URL is taken from its Remote admin sensor, so IP changes are followed automatically. Leave empty to enter a kiosk manually.",
-        "data": { "device_id": "Kiosk device" }
+        "data": {
+          "device_id": "Kiosk device"
+        }
       },
-      "credentials": {
+      "connect": {
         "title": "Connect to {name}",
-        "description": "Enter the remote admin URL (default port {port}) and the admin password set on the kiosk. The password is used once to get a long-lived token and is not stored.",
+        "description": "Enter the kiosk's remote admin URL (HTTPS, default port {port}). Turn on **Use HTTPS** under Settings → Device → Remote Administration on the kiosk first.",
         "data": {
           "name": "Name",
           "url": "Admin URL",
-          "password": "Admin password",
           "verify_ssl": "Verify SSL certificate"
         },
         "data_description": {
-          "verify_ssl": "Leave off for the kiosk's built-in self-signed certificate."
+          "verify_ssl": "Leave off for the kiosk's built-in self-signed certificate: it is then pinned by fingerprint instead."
+        }
+      },
+      "credentials": {
+        "title": "Trust {name}",
+        "description": "The kiosk at {url} presents this certificate (SHA-256):\n\n`{fingerprint}`\n\nCheck that it matches **Settings → Device → TLS** on the kiosk, then enter the admin password. The password is used once to get a token valid for one year and is not stored.",
+        "data": {
+          "password": "Admin password"
         }
       },
       "reauth_confirm": {
         "title": "Re-authenticate {name}",
-        "description": "The kiosk at {url} rejected the stored token. Enter the admin password to get a new one.",
-        "data": { "password": "Admin password" }
+        "description": "{warning}The kiosk at {url} presents this certificate (SHA-256):\n\n`{fingerprint}`\n\nCheck that it matches **Settings → Device → TLS** on the kiosk, then enter the admin password to get a new token.",
+        "data": {
+          "password": "Admin password"
+        }
       },
       "reconfigure": {
         "title": "Reconfigure {name}",
         "data": {
           "url": "Admin URL",
-          "password": "Admin password",
           "verify_ssl": "Verify SSL certificate"
+        }
+      },
+      "reconfigure_credentials": {
+        "title": "Trust {name}",
+        "description": "The kiosk at {url} presents this certificate (SHA-256):\n\n`{fingerprint}`\n\nCheck that it matches **Settings → Device → TLS** on the kiosk, then enter the admin password.",
+        "data": {
+          "password": "Admin password"
         }
       }
     },
     "error": {
       "cannot_connect": "Cannot reach the kiosk. Check the URL and that Remote management is on.",
       "invalid_auth": "The kiosk rejected the password.",
+      "https_required": "Plain HTTP would send the password and token unencrypted. Turn on Use HTTPS on the kiosk and use an https:// URL.",
+      "invalid_url": "That is not a valid URL.",
+      "cert_changed": "The kiosk's certificate changed while connecting. Start again and re-check the fingerprint.",
       "unknown": "Unexpected error, see the logs."
     },
     "abort": {
@@ -48,17 +67,25 @@
     "step": {
       "init": {
         "title": "Backup retention",
-        "data": { "keep": "Backups to keep" },
-        "data_description": { "keep": "Older backups for this kiosk are deleted after each new one." }
+        "data": {
+          "keep": "Backups to keep"
+        },
+        "data_description": {
+          "keep": "Older backups for this kiosk are deleted after each new one."
+        }
       }
     }
   },
   "entity": {
     "button": {
-      "backup_config": { "name": "Backup configuration" }
+      "backup_config": {
+        "name": "Backup configuration"
+      }
     },
     "sensor": {
-      "last_backup": { "name": "Last backup" },
+      "last_backup": {
+        "name": "Last backup"
+      },
       "backup_status": {
         "name": "Backup status",
         "state": {
@@ -104,9 +131,17 @@
     }
   },
   "exceptions": {
-    "unknown_entry": { "message": "No Kiosk Satellite Backup entry with id {entry_id}." },
-    "entry_not_loaded": { "message": "{name} is not loaded." },
-    "no_backups": { "message": "There are no stored backups for {name}." },
-    "file_not_found": { "message": "Backup {file} was not found for {name}." }
+    "unknown_entry": {
+      "message": "No Kiosk Satellite Backup entry with id {entry_id}."
+    },
+    "entry_not_loaded": {
+      "message": "{name} is not loaded."
+    },
+    "no_backups": {
+      "message": "There are no stored backups for {name}."
+    },
+    "file_not_found": {
+      "message": "Backup {file} was not found for {name}."
+    }
   }
 }

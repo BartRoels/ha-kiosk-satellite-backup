@@ -21,9 +21,9 @@ from custom_components.kiosk_satellite_backup.const import (
 
 from .conftest import EXPORT, TOKEN, URL
 
-BUTTON = "button.t65_dining_room_backup_configuration"
-LAST = "sensor.t65_dining_room_last_backup"
-STATUS = "sensor.t65_dining_room_backup_status"
+BUTTON = "button.test_kiosk_backup_configuration"
+LAST = "sensor.test_kiosk_last_backup"
+STATUS = "sensor.test_kiosk_backup_status"
 
 
 async def _setup(hass: HomeAssistant, entry) -> None:
@@ -52,11 +52,11 @@ async def test_button_backup_and_retention(
         )
         freezer.tick(60)
 
-    folder = config_dir / "kiosk_satellite_backups" / "t65_dining_room"
+    folder = config_dir / "kiosk_satellite_backups" / "test_kiosk"
     files = sorted(p.name for p in folder.iterdir())
     assert files == [
-        "ks-backup_t65_dining_room_20260927_030800.json",
-        "ks-backup_t65_dining_room_20260927_030900.json",
+        "ks-backup_test_kiosk_20260927_030800.json",
+        "ks-backup_test_kiosk_20260927_030900.json",
     ]  # keep=2: the 03:07 one was pruned
     newest = folder / files[-1]
     assert newest.read_bytes() == EXPORT
@@ -78,9 +78,9 @@ async def test_state_restored_from_disk(
     hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, mock_entry, config_dir
 ) -> None:
     """After a restart the sensors come back from the files on disk."""
-    folder = config_dir / "kiosk_satellite_backups" / "t65_dining_room"
+    folder = config_dir / "kiosk_satellite_backups" / "test_kiosk"
     folder.mkdir(parents=True)
-    (folder / "ks-backup_t65_dining_room_20260920_030700.json").write_bytes(EXPORT)
+    (folder / "ks-backup_test_kiosk_20260920_030700.json").write_bytes(EXPORT)
     await _setup(hass, mock_entry)
     assert hass.states.get(STATUS).state == "ok"
     assert hass.states.get(LAST).attributes["file"].endswith("20260920_030700.json")
@@ -93,7 +93,7 @@ async def test_backup_failure_and_service(
     aioclient_mock.get(f"{URL}/api/config/export", status=500, text="boom")
     await _setup(hass, mock_entry)
 
-    with pytest.raises(HomeAssistantError, match="T65 - Dining Room"):
+    with pytest.raises(HomeAssistantError, match="Test Kiosk"):
         await hass.services.async_call(DOMAIN, "backup", {}, blocking=True)
     status = hass.states.get(STATUS)
     assert status.state == "failed"
@@ -121,7 +121,7 @@ async def test_backup_service_ok_response(
     )
     result = response["results"][0]
     assert result["status"] == "ok"
-    assert result["file"].startswith("ks-backup_t65_dining_room_")
+    assert result["file"].startswith("ks-backup_test_kiosk_")
 
 
 async def test_rejected_token_starts_reauth(
@@ -161,10 +161,10 @@ async def test_url_follows_remote_admin_sensor(
         mock_entry,
         data={
             **mock_entry.data,
-            CONF_REMOTE_ADMIN_ENTITY: "sensor.t65_dining_room_remote_admin",
+            CONF_REMOTE_ADMIN_ENTITY: "sensor.test_kiosk_remote_admin",
         },
     )
-    hass.states.async_set("sensor.t65_dining_room_remote_admin", new_url)
+    hass.states.async_set("sensor.test_kiosk_remote_admin", new_url)
     aioclient_mock.get(f"{new_url}/api/config/export", content=EXPORT)
     await _setup(hass, mock_entry)
     await hass.services.async_call(
@@ -177,10 +177,10 @@ async def test_restore(
     hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, mock_entry, config_dir
 ) -> None:
     """Restore posts the stored file to /api/config/import."""
-    folder = config_dir / "kiosk_satellite_backups" / "t65_dining_room"
+    folder = config_dir / "kiosk_satellite_backups" / "test_kiosk"
     folder.mkdir(parents=True)
-    older = folder / "ks-backup_t65_dining_room_20260913_030700.json"
-    newer = folder / "ks-backup_t65_dining_room_20260920_030700.json"
+    older = folder / "ks-backup_test_kiosk_20260913_030700.json"
+    newer = folder / "ks-backup_test_kiosk_20260920_030700.json"
     older.write_bytes(b'{"v":"old"}')
     newer.write_bytes(EXPORT)
     aioclient_mock.post(f"{URL}/api/config/import", json={"ok": True})
@@ -229,3 +229,108 @@ async def test_unload(hass: HomeAssistant, mock_entry) -> None:
     """Entry unloads cleanly."""
     await _setup(hass, mock_entry)
     assert await hass.config_entries.async_unload(mock_entry.entry_id)
+
+
+async def test_non_admin_cannot_restore(
+    hass: HomeAssistant, mock_entry, hass_read_only_user
+) -> None:
+    """Backup and restore are admin-only actions."""
+    from homeassistant.core import Context
+    from homeassistant.exceptions import Unauthorized
+
+    await _setup(hass, mock_entry)
+    for service, data in (
+        ("restore", {"config_entry_id": mock_entry.entry_id}),
+        ("backup", {}),
+    ):
+        with pytest.raises(Unauthorized):
+            await hass.services.async_call(
+                DOMAIN,
+                service,
+                data,
+                blocking=True,
+                context=Context(user_id=hass_read_only_user.id),
+            )
+
+
+async def test_error_body_not_exposed(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, mock_entry
+) -> None:
+    """A kiosk error page never ends up in the (widely visible) status sensor."""
+    aioclient_mock.get(
+        f"{URL}/api/config/export", status=500, text="SECRET-STACKTRACE token=abc"
+    )
+    await _setup(hass, mock_entry)
+    with pytest.raises(HomeAssistantError):
+        await hass.services.async_call(
+            "button", "press", {"entity_id": BUTTON}, blocking=True
+        )
+    error = hass.states.get(STATUS).attributes["error"]
+    assert "HTTP 500" in error
+    assert "SECRET" not in error
+
+
+async def test_legacy_entry_gets_pinned(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, mock_entry
+) -> None:
+    """Entries from v0.1.0 have no pin: the first backup pins the current certificate."""
+    from custom_components.kiosk_satellite_backup.const import (
+        CONF_CERT_SHA256,
+        CONF_SPKI_SHA256,
+        CONF_TOKEN_ISSUED,
+    )
+
+    from .conftest import PIN
+
+    legacy = {
+        k: v
+        for k, v in mock_entry.data.items()
+        if k not in (CONF_CERT_SHA256, CONF_SPKI_SHA256, CONF_TOKEN_ISSUED)
+    }
+    hass.config_entries.async_update_entry(mock_entry, data=legacy)
+    aioclient_mock.get(f"{URL}/api/config/export", content=EXPORT)
+    await _setup(hass, mock_entry)
+    await hass.services.async_call(
+        "button", "press", {"entity_id": BUTTON}, blocking=True
+    )
+    assert mock_entry.data[CONF_CERT_SHA256] == PIN.cert_sha256
+    assert mock_entry.data[CONF_SPKI_SHA256] == PIN.spki_sha256
+    # The data update must not have reloaded the entry mid-backup.
+    assert mock_entry.state.name == "LOADED"
+    assert hass.states.get(STATUS).state == "ok"
+
+
+async def test_expiring_token_asks_for_reauth(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, mock_entry
+) -> None:
+    """Two weeks before the 1-year token expires, the user is asked to re-authenticate."""
+    from custom_components.kiosk_satellite_backup.const import CONF_TOKEN_ISSUED
+
+    hass.config_entries.async_update_entry(
+        mock_entry,
+        data={**mock_entry.data, CONF_TOKEN_ISSUED: "2025-10-01T00:00:00+00:00"},
+    )
+    await _setup(hass, mock_entry)
+    await hass.async_block_till_done()
+    flows = hass.config_entries.flow.async_progress_by_handler(DOMAIN)
+    assert [f["context"]["source"] for f in flows] == [SOURCE_REAUTH]
+
+
+async def test_sensor_http_url_ignored(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, mock_entry
+) -> None:
+    """A Remote admin sensor reporting plain HTTP is ignored (token stays on HTTPS)."""
+    hass.config_entries.async_update_entry(
+        mock_entry,
+        data={
+            **mock_entry.data,
+            CONF_REMOTE_ADMIN_ENTITY: "sensor.test_kiosk_remote_admin",
+        },
+    )
+    hass.states.async_set("sensor.test_kiosk_remote_admin", "http://192.0.2.99:2324")
+    aioclient_mock.get(f"{URL}/api/config/export", content=EXPORT)
+    await _setup(hass, mock_entry)
+    await hass.services.async_call(
+        "button", "press", {"entity_id": BUTTON}, blocking=True
+    )
+    assert str(aioclient_mock.mock_calls[0][1]).startswith(URL)

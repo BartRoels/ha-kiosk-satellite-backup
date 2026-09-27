@@ -12,14 +12,20 @@ CONF_URL: Final = "url"
 CONF_TOKEN: Final = "token"
 CONF_VERIFY_SSL: Final = "verify_ssl"
 CONF_KEEP: Final = "keep"
+CONF_CERT_SHA256: Final = "cert_sha256"
+CONF_SPKI_SHA256: Final = "spki_sha256"
+CONF_TOKEN_ISSUED: Final = "token_issued"
 
 DEFAULT_PORT: Final = 2324
 DEFAULT_KEEP: Final = 8
 MIN_KEEP: Final = 1
 MAX_KEEP: Final = 100
 
-# Long-lived automation token requested from the kiosk (the API clamps to 10 years).
-TOKEN_TTL_DAYS: Final = 3650
+# Token lifetime requested from the kiosk. Kiosk Satellite tokens are stateless and
+# cannot be revoked (not even by changing the admin password), so keep them short-lived.
+TOKEN_TTL_DAYS: Final = 365
+# Ask for re-authentication this many days before the token expires.
+TOKEN_RENEW_BEFORE_DAYS: Final = 14
 
 # Backups are written below <config>/kiosk_satellite_backups/<device slug>/
 BACKUP_DIR: Final = "kiosk_satellite_backups"

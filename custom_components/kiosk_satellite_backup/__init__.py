@@ -12,6 +12,7 @@ from homeassistant.core import (
 )
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.service import async_register_admin_service
 from homeassistant.helpers.typing import ConfigType
 import voluptuous as vol
 
@@ -107,14 +108,17 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         )
         return {"name": entry.title, "file": restored.path.name}
 
-    hass.services.async_register(
+    # Admin-only: backups hold secrets and a restore rewrites a tablet's configuration.
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_BACKUP,
         async_handle_backup,
         schema=BACKUP_SCHEMA,
         supports_response=SupportsResponse.OPTIONAL,
     )
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_RESTORE,
         async_handle_restore,
@@ -137,7 +141,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: KioskBackupConfigEntry) 
 async def _async_options_updated(
     hass: HomeAssistant, entry: KioskBackupConfigEntry
 ) -> None:
-    await hass.config_entries.async_reload(entry.entry_id)
+    # Data updates (a renewed certificate pin) must not reload mid-backup;
+    # only reload when the options (retention) actually changed.
+    if dict(entry.options) != entry.runtime_data.options_snapshot:
+        await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(

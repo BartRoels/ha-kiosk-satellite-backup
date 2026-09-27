@@ -59,8 +59,8 @@ Because they live in `/config`, regular Home Assistant backups include them.
 
 ## Requirements
 
-- Kiosk Satellite with **Remote management** on and an admin password set
-  (Settings → Device → Remote Administration).
+- Kiosk Satellite with **Remote management** on, an admin password set and **Use HTTPS** on
+  (Settings → Device → Remote Administration). Plain HTTP is refused.
 - Home Assistant 2025.2 or newer.
 
 ## Install
@@ -78,11 +78,34 @@ Settings → Devices & services → Add integration → **Kiosk Satellite Backup
 1. Pick the tablet's ESPHome device. The admin URL is pre-filled from its *Remote admin*
    sensor, and later backups follow that sensor if the tablet's IP changes.
    (Leave empty to add a kiosk manually by name and URL.)
-2. Enter the admin password. It is exchanged once for a long-lived token
-   (`ttl_days: 3650`) and **not stored**. Leave *Verify SSL* off for the kiosk's
-   self-signed certificate.
+2. Confirm the URL. Leave *Verify SSL* off for the kiosk's self-signed certificate.
+3. Compare the certificate fingerprint shown with **Settings → Device → TLS** on the kiosk,
+   then enter the admin password. It is exchanged once for a token valid for one year and
+   is **not stored**.
 
-If the kiosk ever rejects the token, Home Assistant raises a re-authentication prompt.
+Home Assistant asks you to re-authenticate two weeks before the token expires, when the
+kiosk rejects the token, or when the kiosk presents a certificate with a different key.
+
+## Security
+
+- **Certificate pinning.** The kiosk's self-signed certificate is pinned at setup. Every
+  request, including the token, only goes out over a connection that presents that exact
+  certificate. The kiosk renews its certificate yearly with the same key; such renewals are
+  accepted automatically. A different key is refused until you re-authenticate and review
+  the new fingerprint.
+- **HTTPS only.** Plain `http://` URLs are refused, also when reported by the kiosk's sensor.
+- **No stored password.** Only a one-year token is kept (in Home Assistant's config entry
+  storage). Kiosk Satellite tokens can't be revoked, not even by changing the admin password,
+  which is why they are kept short-lived.
+- **Admin-only actions.** `backup` and `restore` can only be called by Home Assistant
+  administrators.
+- **No leaks in errors.** Kiosk responses are never copied into logs or sensor attributes.
+- **Private files.** Backups are written atomically, readable only by Home Assistant
+  (`0600`), and a restore can only pick files from the kiosk's own backup folder.
+
+Found a security issue? Please open a private
+[security advisory](https://github.com/BartRoels/ha-kiosk-satellite-backup/security/advisories/new)
+instead of a public issue.
 
 ## Weekly schedule
 
