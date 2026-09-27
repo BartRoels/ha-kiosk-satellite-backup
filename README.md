@@ -1,3 +1,5 @@
+<img src="assets/icon.png" alt="" width="128" align="right">
+
 # Kiosk Satellite Backup
 
 Home Assistant custom integration that backs up the full configuration of

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#16384F"/>
+      <stop offset="1" stop-color="#0C1E2C"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0F4C5C"/>
+      <stop offset="1" stop-color="#0A3340"/>
+    </linearGradient>
+  </defs>
+
+  <!-- tile -->
+  <rect x="0" y="0" width="256" height="256" rx="56" fill="url(#bg)"/>
+
+  <!-- stored copies behind the tablet (retention) -->
+  <rect x="66" y="46" width="160" height="112" rx="16" fill="#23485E"/>
+  <rect x="50" y="60" width="160" height="112" rx="16" fill="#35647E"/>
+
+  <!-- wall tablet -->
+  <rect x="32" y="76" width="168" height="116" rx="17" fill="#E6EEF4"/>
+  <rect x="43" y="87" width="146" height="94" rx="9" fill="url(#screen)"/>
+
+  <!-- circular backup arrow -->
+  <g fill="none" stroke="#4FD1A5" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M147.5 118 A31 31 0 1 1 134.5 104.5"/>
+    <polyline points="128.5,93.5 135.5,105 123,112.5"/>
+  </g>
+
+  <!-- check: backup verified -->
+  <polyline points="104,131 114,141 132,121" fill="none" stroke="#FFFFFF" stroke-width="9.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
