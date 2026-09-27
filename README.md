@@ -1,6 +1,6 @@
-<img src="assets/icon.png" alt="Kiosk Satellite Backup" width="128">
+<img src="assets/icon.png" alt="Kiosk Satellite Fleet Backup Solution for Home Assistant" width="128">
 
-# Kiosk Satellite Backup
+# Kiosk Satellite Fleet Backup Solution for Home Assistant
 
 Home Assistant custom integration that backs up the full configuration of
 [Kiosk Satellite](https://kiosksatellite.com) Android tablets through the kiosk's
@@ -28,7 +28,7 @@ A big **thank you to Xavier** for building and maintaining Kiosk Satellite, and 
 its Remote API so well that an integration like this is possible. If Kiosk Satellite makes your
 home better, consider [buying him a coffee](https://buymeacoffee.com/jxlarrea) ☕.
 
-> Kiosk Satellite Backup is an independent community project. It is not affiliated with or
+> Kiosk Satellite Fleet Backup Solution for Home Assistant is an independent community project. It is not affiliated with or
 > endorsed by Kiosk Satellite or its author. Please report issues with this integration
 > [here](https://github.com/BartRoels/ha-kiosk-satellite-backup/issues), not to the Kiosk Satellite project.
 
