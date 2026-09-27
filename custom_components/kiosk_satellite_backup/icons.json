@@ -1,10 +1,14 @@
 {
   "entity": {
     "button": {
-      "backup_config": { "default": "mdi:content-save-cog" }
+      "backup_config": {
+        "default": "mdi:content-save-cog"
+      }
     },
     "sensor": {
-      "last_backup": { "default": "mdi:backup-restore" },
+      "last_backup": {
+        "default": "mdi:backup-restore"
+      },
       "backup_status": {
         "default": "mdi:check-circle-outline",
         "state": {
@@ -12,10 +16,19 @@
           "never": "mdi:help-circle-outline"
         }
       }
+    },
+    "number": {
+      "keep_backups": {
+        "default": "mdi:archive-cog"
+      }
     }
   },
   "services": {
-    "backup": { "service": "mdi:content-save-cog" },
-    "restore": { "service": "mdi:backup-restore" }
+    "backup": {
+      "service": "mdi:content-save-cog"
+    },
+    "restore": {
+      "service": "mdi:backup-restore"
+    }
   }
 }

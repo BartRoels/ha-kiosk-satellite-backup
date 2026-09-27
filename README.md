@@ -41,6 +41,7 @@ Per kiosk (one config entry each), added to the kiosk's existing ESPHome device:
 | `button.<kiosk>_backup_configuration` | Take a backup now |
 | `sensor.<kiosk>_last_backup` | Timestamp of the last good backup; attributes: file, size, backups stored, retention |
 | `sensor.<kiosk>_backup_status` | `ok` / `failed` / `never`; attributes: last attempt, error |
+| `number.<kiosk>_backups_to_keep` | Backups to keep for this kiosk (1–100, default 8). Lowering it deletes the oldest backups right away |
 
 Actions:
 
@@ -51,7 +52,7 @@ Actions:
   clone onto a different tablet.
 
 Backups are stored in `<config>/kiosk_satellite_backups/<kiosk>/ks-backup_<kiosk>_<YYYYmmdd_HHMMSS>.json`
-(folder `0700`, files `0600`), newest *N* kept (default 8, change under **Configure**).
+(folder `0700`, files `0600`), newest *N* kept per kiosk (default 8, set with the *Backups to keep* entity or under **Configure**).
 Because they live in `/config`, regular Home Assistant backups include them.
 
 > The export contains **secrets** (the kiosk's Home Assistant token, passwords).

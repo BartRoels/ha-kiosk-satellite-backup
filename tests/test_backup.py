@@ -334,3 +334,32 @@ async def test_sensor_http_url_ignored(
         "button", "press", {"entity_id": BUTTON}, blocking=True
     )
     assert str(aioclient_mock.mock_calls[0][1]).startswith(URL)
+
+
+async def test_keep_number_prunes_without_reload(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, mock_entry, config_dir
+) -> None:
+    """Lowering 'Backups to keep' saves the option and prunes old files right away."""
+    from custom_components.kiosk_satellite_backup.const import CONF_KEEP
+
+    folder = config_dir / "kiosk_satellite_backups" / "test_kiosk"
+    folder.mkdir(parents=True)
+    for day in ("13", "20", "27"):
+        (folder / f"ks-backup_test_kiosk_202609{day}_030700.json").write_bytes(EXPORT)
+    hass.config_entries.async_update_entry(mock_entry, options={CONF_KEEP: 5})
+    await _setup(hass, mock_entry)
+
+    number = "number.test_kiosk_backups_to_keep"
+    assert hass.states.get(number).state == "5"
+    await hass.services.async_call(
+        "number", "set_value", {"entity_id": number, "value": 1}, blocking=True
+    )
+    await hass.async_block_till_done()
+
+    assert mock_entry.options[CONF_KEEP] == 1
+    assert mock_entry.state.name == "LOADED"
+    assert [p.name for p in folder.iterdir()] == [
+        "ks-backup_test_kiosk_20260927_030700.json"
+    ]
+    assert hass.states.get(number).state == "1"
+    assert hass.states.get(LAST).attributes["backups_stored"] == 1

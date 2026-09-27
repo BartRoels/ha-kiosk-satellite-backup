@@ -94,6 +94,11 @@
           "never": "Never"
         }
       }
+    },
+    "number": {
+      "keep_backups": {
+        "name": "Backups to keep"
+      }
     }
   },
   "services": {

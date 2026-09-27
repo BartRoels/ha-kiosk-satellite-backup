@@ -202,6 +202,13 @@ class KioskBackupManager:
         """Backups on disk, newest first."""
         return await self.hass.async_add_executor_job(self._list_files)
 
+    def _prune(self, keep: int) -> list[BackupFile]:
+        """Delete all but the newest `keep` backups (runs in executor)."""
+        files = self._list_files()
+        for old in files[keep:]:
+            old.path.unlink(missing_ok=True)
+        return files[:keep]
+
     def _write_and_prune(self, payload: bytes, stamp: str) -> tuple[BackupFile, int]:
         """Write a new backup atomically and prune old ones (runs in executor)."""
         self.directory.mkdir(parents=True, exist_ok=True)
@@ -213,12 +220,20 @@ class KioskBackupManager:
             handle.write(payload)
         os.replace(tmp, target)
 
-        files = self._list_files()
-        for old in files[self.keep :]:
-            old.path.unlink(missing_ok=True)
-        files = files[: self.keep]
+        files = self._prune(self.keep)
         newest = next(f for f in files if f.path == target)
         return newest, len(files)
+
+    async def async_set_keep(self, keep: int) -> None:
+        """Change retention (from the number entity) and prune right away."""
+        options = {**self.entry.options, CONF_KEEP: int(keep)}
+        # Update the snapshot first so this options change doesn't reload the entry.
+        self.options_snapshot = options
+        self.hass.config_entries.async_update_entry(self.entry, options=options)
+        files = await self.hass.async_add_executor_job(self._prune, int(keep))
+        self.backup_count = len(files)
+        self.last_file = files[0] if files else None
+        self._notify()
 
     def _read(self, path: Path) -> bytes:
         return path.read_bytes()
