@@ -1,0 +1,112 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Pick your kiosk",
+        "description": "Select the Kiosk Satellite tablet from its ESPHome device. The backup entities are added to that device and the admin URL is taken from its Remote admin sensor, so IP changes are followed automatically. Leave empty to enter a kiosk manually.",
+        "data": { "device_id": "Kiosk device" }
+      },
+      "credentials": {
+        "title": "Connect to {name}",
+        "description": "Enter the remote admin URL (default port {port}) and the admin password set on the kiosk. The password is used once to get a long-lived token and is not stored.",
+        "data": {
+          "name": "Name",
+          "url": "Admin URL",
+          "password": "Admin password",
+          "verify_ssl": "Verify SSL certificate"
+        },
+        "data_description": {
+          "verify_ssl": "Leave off for the kiosk's built-in self-signed certificate."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate {name}",
+        "description": "The kiosk at {url} rejected the stored token. Enter the admin password to get a new one.",
+        "data": { "password": "Admin password" }
+      },
+      "reconfigure": {
+        "title": "Reconfigure {name}",
+        "data": {
+          "url": "Admin URL",
+          "password": "Admin password",
+          "verify_ssl": "Verify SSL certificate"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot reach the kiosk. Check the URL and that Remote management is on.",
+      "invalid_auth": "The kiosk rejected the password.",
+      "unknown": "Unexpected error, see the logs."
+    },
+    "abort": {
+      "already_configured": "This kiosk is already configured.",
+      "reauth_successful": "Re-authentication was successful.",
+      "reconfigure_successful": "Reconfiguration was successful."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Backup retention",
+        "data": { "keep": "Backups to keep" },
+        "data_description": { "keep": "Older backups for this kiosk are deleted after each new one." }
+      }
+    }
+  },
+  "entity": {
+    "button": {
+      "backup_config": { "name": "Backup configuration" }
+    },
+    "sensor": {
+      "last_backup": { "name": "Last backup" },
+      "backup_status": {
+        "name": "Backup status",
+        "state": {
+          "ok": "OK",
+          "failed": "Failed",
+          "never": "Never"
+        }
+      }
+    }
+  },
+  "services": {
+    "backup": {
+      "name": "Back up kiosks",
+      "description": "Exports the full configuration of one or more kiosks to <config>/kiosk_satellite_backups.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Kiosks",
+          "description": "Kiosks to back up. Leave empty to back up all of them."
+        }
+      }
+    },
+    "restore": {
+      "name": "Restore kiosk",
+      "description": "Pushes a stored backup back to a kiosk. The kiosk applies it immediately.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Kiosk",
+          "description": "Kiosk to restore."
+        },
+        "file": {
+          "name": "Backup file",
+          "description": "File name of the backup to restore. Leave empty for the newest."
+        },
+        "adopt_identity": {
+          "name": "Adopt identity",
+          "description": "Take over the backup's device name and ESPHome node name. Turn off when cloning to a different tablet."
+        },
+        "import_local_storage": {
+          "name": "Import page data",
+          "description": "Also restore the dashboard page's saved data, including the Voice Satellite selection. Turn off when cloning."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "unknown_entry": { "message": "No Kiosk Satellite Backup entry with id {entry_id}." },
+    "entry_not_loaded": { "message": "{name} is not loaded." },
+    "no_backups": { "message": "There are no stored backups for {name}." },
+    "file_not_found": { "message": "Backup {file} was not found for {name}." }
+  }
+}

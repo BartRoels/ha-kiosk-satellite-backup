@@ -1,0 +1,21 @@
+{
+  "entity": {
+    "button": {
+      "backup_config": { "default": "mdi:content-save-cog" }
+    },
+    "sensor": {
+      "last_backup": { "default": "mdi:backup-restore" },
+      "backup_status": {
+        "default": "mdi:check-circle-outline",
+        "state": {
+          "failed": "mdi:alert-circle-outline",
+          "never": "mdi:help-circle-outline"
+        }
+      }
+    }
+  },
+  "services": {
+    "backup": { "service": "mdi:content-save-cog" },
+    "restore": { "service": "mdi:backup-restore" }
+  }
+}

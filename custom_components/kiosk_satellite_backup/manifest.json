@@ -1,0 +1,13 @@
+{
+  "domain": "kiosk_satellite_backup",
+  "name": "Kiosk Satellite Backup",
+  "after_dependencies": ["esphome"],
+  "codeowners": ["@BartRoels"],
+  "config_flow": true,
+  "documentation": "https://github.com/BartRoels/ha-kiosk-satellite-backup",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/BartRoels/ha-kiosk-satellite-backup/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

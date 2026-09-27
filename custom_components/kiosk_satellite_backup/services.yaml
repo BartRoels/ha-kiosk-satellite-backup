@@ -1,0 +1,28 @@
+backup:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: kiosk_satellite_backup
+
+restore:
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        config_entry:
+          integration: kiosk_satellite_backup
+    file:
+      required: false
+      example: "ks-backup_t65_dining_room_20260927_030700.json"
+      selector:
+        text:
+    adopt_identity:
+      default: true
+      selector:
+        boolean:
+    import_local_storage:
+      default: true
+      selector:
+        boolean:
