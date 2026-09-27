@@ -6,6 +6,32 @@ Home Assistant custom integration that backs up the full configuration of
 [Kiosk Satellite](https://kiosksatellite.com) Android tablets through the kiosk's
 Remote API (`GET /api/config/export`) and can restore it (`POST /api/config/import`).
 
+## Built for Kiosk Satellite 💙
+
+This integration only exists because of **[Kiosk Satellite](https://kiosksatellite.com)** by
+**[Xavier (@jxlarrea)](https://github.com/jxlarrea)**: a free, fully local Android kiosk app
+built for Home Assistant from the ground up. If you run wall tablets with Home Assistant
+dashboards, give it a try:
+
+- Native **Voice Satellite** support, so your tablet listens for your wake word even with the screen off
+- A built-in **ESPHome connection** that turns every tablet into a proper Home Assistant device
+  (screen, volume, screensaver, camera, notifications, announcements), plus an optional Bluetooth proxy
+- **Screensavers** with Immich albums, local photos, clocks and weather, with motion, face or presence wake
+- Synchronized **Music Assistant** playback, intercom between kiosks, camera views and DLNA
+- A full **remote admin** in the browser, fleet management and a REST API
+  (the API this integration relies on)
+
+👉 [Website & docs](https://kiosksatellite.com) · [GitHub](https://github.com/jxlarrea/kiosk-satellite) ·
+[Voice Satellite for Home Assistant](https://github.com/jxlarrea/voice-satellite-card-integration)
+
+A big **thank you to Xavier** for building and maintaining Kiosk Satellite, and for documenting
+its Remote API so well that an integration like this is possible. If Kiosk Satellite makes your
+home better, consider [buying him a coffee](https://buymeacoffee.com/jxlarrea) ☕.
+
+> Kiosk Satellite Backup is an independent community project. It is not affiliated with or
+> endorsed by Kiosk Satellite or its author. Please report issues with this integration
+> [here](https://github.com/BartRoels/ha-kiosk-satellite-backup/issues), not to the Kiosk Satellite project.
+
 ## What you get
 
 Per kiosk (one config entry each), added to the kiosk's existing ESPHome device:
@@ -65,6 +91,8 @@ alias: Kiosk Satellite - Weekly config backup
 triggers:
   - trigger: time
     at: "03:07:00"
+conditions:
+  - condition: time
     weekday: [sun]
 actions:
   - action: kiosk_satellite_backup.backup
