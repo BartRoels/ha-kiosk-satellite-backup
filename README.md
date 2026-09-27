@@ -1,4 +1,4 @@
-<img src="assets/icon.png" alt="" width="128" align="right">
+<img src="assets/icon.png" alt="" width="128" align="left">
 
 # Kiosk Satellite Backup
 
