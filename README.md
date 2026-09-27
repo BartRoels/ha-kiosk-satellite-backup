@@ -1,4 +1,4 @@
-<img src="assets/icon.png" alt="" width="128" align="left">
+<img src="assets/icon.png" alt="Kiosk Satellite Backup" width="128">
 
 # Kiosk Satellite Backup
 
